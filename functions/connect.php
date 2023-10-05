@@ -857,7 +857,7 @@ function sendmail($email, $subject, $message)
 {
     // Send email to provided address
     $to = $email;
-    $headers = "From: no-reply@aberdeen.com\r\n";
+    $headers = "From: no-reply@gifta.com\r\n";
     $headers .= "Content-type: text/html\r\n";
     $mailed = mail($to, $subject, $message, $headers);
 
