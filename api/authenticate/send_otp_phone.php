@@ -2,36 +2,52 @@
 
 include("header.php");
 
+// Define the regular expression pattern for Nigerian phone numbers
+$phonePattern = "/^0[7-9][0-9]{9}$/";
 
-// get posted data
-// $data = json_decode(file_POST_contents("php://input"), true);
+// Get posted data
 $data = file_get_contents("php://input");
-// echo $data;
 $data = json_decode($data, true);
 
 if (!empty($data)) {
+    $phone_number = $data['phone'];
 
+    // Remove any non-digit characters from the phone number
+    $cleaned_phone_number = preg_replace("/[^0-9]/", "", $phone_number);
 
-    $otpResponse = GenerateOtpPhone($data['phone']);
-    if ($otpResponse) {
-        // sms service to send otp
-       
-        // set response code - 201 created
-        http_response_code(200);
+    if (preg_match($phonePattern, $cleaned_phone_number)) {
+        $otpResponse = GenerateOtpPhone($phone_number);
 
-        // tell the user
-        echo json_encode(array("message" => "OTP sent", "status" => "Success"));
+        if ($otpResponse) {
+            // Simulate sending OTP via SMS
+            // Replace the following line with your SMS sending logic
+            $smsSent = sendOtpViaSms($otpResponse);
+
+            if ($smsSent) {
+                http_response_code(200);
+                echo json_encode(array("message" => "OTP sent", "status" => "Success"));
+            } else {
+                http_response_code(400);
+                echo json_encode(array("message" => "Failed to send OTP via SMS", "status" => false));
+            }
+        } else {
+            http_response_code(400);
+            echo json_encode(array("message" => "Failed to generate OTP", "status" => false));
+        }
     } else {
-        // set response code - 400 service unavailable
         http_response_code(400);
-
-        // tell the user
-        echo json_encode(array("message" => "Failed to send Otp", "status" => false));
+        echo json_encode(array("message" => "Invalid Nigerian phone number", "status" => false));
     }
 } else {
-    // set response code - 400 bad request
     http_response_code(400);
+    echo json_encode(array("message" => "Fill in appropriate data.", "status" => false));
+}
 
-    // tell the user
-    echo json_encode(array("message" => "Fill in appropraite data."));
+
+function sendOtpViaSms($otp) {
+    // Implement your SMS sending logic here
+    // Return true if the SMS was sent successfully, otherwise return false
+    // You can use third-party services or APIs to send SMS
+    // Example: return sendSmsUsingSomeService($phone_number, $otp);
+    return true; // Simulated success
 }

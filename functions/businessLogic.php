@@ -4,6 +4,11 @@ include('connect.php');
 
 $today = date('Y-m-d H:i:s');
 
+// Regular expression to validate an email address
+$pattern = "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/";
+
+$PhonePattern = "/^0[7-9][0-9]{9}$/";
+
 # User management
 function CreateUser($username, $dob, $phone, $email, $address, $password)
 {
@@ -37,7 +42,7 @@ function SignUpSocial($username, $dob, $phone, $email, $channel)
     global $connection;
 
     $findUser = selectOne('users_social', ['email' => $email]);
-    if(!$findUser){
+    if (!$findUser) {
         $userData = [
             'username' => $username,
             'dob' => $dob,
@@ -45,7 +50,7 @@ function SignUpSocial($username, $dob, $phone, $email, $channel)
             'email' => $email,
             'user_type' => "CUSTOMER",
         ];
-    
+
         $createUser = insert('users_social', $userData);
         if ($createUser) {
             insert('users', $userData);
@@ -65,7 +70,6 @@ function SignUpSocial($username, $dob, $phone, $email, $channel)
         'email' => $email['email'],
     ];
     return $UserResponse;
-    
 }
 
 function EditUser($username, $phone, $email, $dob, $address)
@@ -137,20 +141,26 @@ function LogInformation($email, $activity, $method_name)
     return mysqli_error($connection);
 }
 
-function GenerateOtpEmail($email){
+function GenerateOtpEmail($email)
+{
     global $connection;
 
     $otp = generateRandomNumber(6);
+    $otpData = [
+        'email' => $email,
+        'otp' => $otp
+    ];
 
-    $recordOtp = insert('otp', ['email' => $email, 'otp' => $otp]);
+    $recordOtp = insert('otp', $otpData);
     if ($recordOtp) {
-        return $recordOtp;
+        return $otp;
     }
     return mysqli_error($connection);
 }
 
 
-function GenerateOtpPhone($phone){
+function GenerateOtpPhone($phone)
+{
     global $connection;
 
     $otp = generateRandomNumber(6);
@@ -158,6 +168,18 @@ function GenerateOtpPhone($phone){
     $recordOtp = insert('otp', ['phone' => $phone, 'otp' => $otp]);
     if ($recordOtp) {
         return $otp;
+    }
+    return mysqli_error($connection);
+}
+
+
+function CreateCategories($name, $description)
+{
+    global $connection;
+
+    $createCategories =  insert('categories', [$name, $description]);
+    if ($createCategories) {
+        return $createCategories;
     }
     return mysqli_error($connection);
 }

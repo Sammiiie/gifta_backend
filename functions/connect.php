@@ -857,7 +857,7 @@ function sendmail($email, $subject, $message)
 {
     // Send email to provided address
     $to = $email;
-    $headers = "From: no-reply@gifta.com\r\n";
+    $headers = "From: no-reply@gifta.social\r\n";
     $headers .= "Content-type: text/html\r\n";
     $mailed = mail($to, $subject, $message, $headers);
 
@@ -881,168 +881,24 @@ function auditReport($table, $report)
     return $createReport;
 }
 
-function verifyReviewer($users_id, $id)
-{
-    $findReviewer = customQuery("SELECT * FROM reviewers WHERE users_id = '$users_id' AND (contracts_id = $id OR early_notifications_id = $id OR close_out_id = $id)");
-    if (count($findReviewer) > 0) {
-        error_log(" Verify Reviewer :  $findReviewer");
-        return true;
-    } else {
-        error_log(" Verify Reviewer : empty array");
-        return false;
-    }
+
+function is_valid_email($email) {
+    return filter_var($email, FILTER_VALIDATE_EMAIL);
 }
 
-function getReview($users_id, $id, $formType)
-{
-    if ($formType == "contracts") {
-        $findReviewer = customQuery2("SELECT * FROM reviewers WHERE users_id = '$users_id' AND contracts_id = $id");
-    } else if ($formType == "early_notifications") {
-        $findReviewer = customQuery2("SELECT * FROM reviewers WHERE users_id = '$users_id' AND  early_notifications_id = $id ");
-    } else if ($formType == "close_out") {
-        $findReviewer = customQuery2("SELECT * FROM reviewers WHERE users_id = '$users_id' AND close_out_id = $id");
-    }
-    return $findReviewer;
-}
-
-function assignReviewer($formType, $reviewer_id, $id)
-{
-    global $connection;
-    if ($formType == "contracts") {
-        $findContract = selectOne('contracts', ['id' => $id]);
-        // update('contracts', $id, "id", ['reviewer_id' => $reviewer_id]);
-        // update('early_notifications', $findContract['early_notifications_id'], "id", ['reviewer_id' => $reviewer_id]);
-        // update('close_out', $findContract['id'], "contracts_id", ['reviewer_id' => $reviewer_id]);
-        if (verifyReviewer($reviewer_id, $id)) {
-            $findReview = getReview($reviewer_id, $id, "contracts");
-            error_log("Reviewer Assigned ID: " . $findReview['id']);
-            $reviwerData = [
-                "users_id" => $reviewer_id,
-                "contracts_id" => $findContract['id'],
-                "early_notifications_id" => $findContract['early_notifications_id'],
-            ];
-            return update('reviewers', $findReview['id'], "id", $reviwerData);
-        } else {
-            $reviwerData = [
-                "users_id" => $reviewer_id,
-                "contracts_id" => $findContract['id'],
-                "early_notifications_id" => $findContract['early_notifications_id']
-            ];
-            error_log("Reviewer Assigned ID: Insert reviwer with id " . $reviewer_id);
-            $insertReviewer = insert('reviewers', $reviwerData);
-            $error = mysqli_error($connection);
-            error_log("ERROR ON INSERT: " . $error);
-            return $insertReviewer;
-        }
-    } else if ($formType == "early_notifications") {
-        $findContract = selectOne('contracts', ['early_notifications_id' => $id]);
-        error_log(json_encode($findContract));
-
-        if(!empty($findContract['id'])){
-            $contractID = $findContract['id'];
-        }else{ $contractID = 0; }
-        if (verifyReviewer($reviewer_id, $id)) {
-            $findReview = getReview($reviewer_id, $id, "early_notifications");
-            error_log("Reviewer Assigned ID: " . $findReview['id']);
-            
-            $reviwerData = [
-                "users_id" => $reviewer_id,
-                "contracts_id" => $findContract,
-                "early_notifications_id" => $id
-            ];
-            return update('reviewers', $findReview['id'], "id", $reviwerData);
-        } else {
-            
-            $reviwerData = [
-                "users_id" => $reviewer_id,
-                "contracts_id" =>  $contractID,
-                "early_notifications_id" => $id
-            ];
-            error_log("Reviewer Assigned ID: Insert reviwer with id " . $reviewer_id);
-            $insertReviewer = insert('reviewers', $reviwerData);
-            $error = mysqli_error($connection);
-            error_log("ERROR ON INSERT: " . $error);
-            return $insertReviewer;
-        }
-
-    } else if ($formType == "close_out") {
-        $findContract = selectOne('close_out', ['id' => $id]);
-        $findContracts = selectOne('contracts', ['id' => $findContract['contracts_id']]);
-        // update('close_out', $id, "id", ['reviewer_id' => $reviewer_id]);
-        // update('early_notifications', $findContracts['early_notifications_id'], "id", ['reviewer_id' => $reviewer_id]);
-        // update('contracts', $findContracts['id'], "id", ['reviewer_id' => $reviewer_id]);
-        if (verifyReviewer($reviewer_id, $id)) {
-            $findReview = getReview($reviewer_id, $id, "close_out");
-            error_log("Reviewer Assigned ID: " . $findReview['id']);
-            $reviwerData = [
-                "users_id" => $reviewer_id,
-                "contracts_id" => $findContracts['id'],
-                "early_notifications_id" => $findContracts['early_notifications_id'],
-                "close_out_id" => $id
-            ];
-            return update('reviewers', $findReview['id'], "id", $reviwerData);
-        } else {
-            $reviwerData = [
-                "users_id" => $reviewer_id,
-                "contracts_id" => $findContracts['id'],
-                "early_notifications_id" => $findContracts['early_notifications_id'],
-                "close_out_id" => $id
-            ];
-            error_log("Reviewer Assigned ID: Insert reviwer with id " . $reviewer_id);
-            $insertReviewer = insert('reviewers', $reviwerData);
-            $error = mysqli_error($connection);
-            error_log("ERROR ON INSERT: " . $error);
-            return $insertReviewer;
-        }
-    }
-}
-
-function insertNotification($user_id, $user_types, $mda, $message, $notification_type)
-{
-    global $connection;
-    $table = "notifications";
-    $notifications = array();
-    error_log("Notification Usertypes: " . print_r($user_types, true));
-
-    foreach ($user_types as $user_type) {
-        $record = array(
-            "user_id" => $user_id ?: 0,
-            "user_type" => $user_type,
-            "mda" => $mda,
-            "message" => $message,
-            "notification_type" => $notification_type,
-            "status" => "unread"
-        );
-        $notifications[] = $record;
-    }
-
-    foreach ($notifications as $notification) {
-        insert($table, $notification);
-        $error = mysqli_error($connection);
-        error_log($error);
-    }
-
-    return mysqli_insert_id($connection);
-}
-
-function reviewerNotification($form, $form_id, $message)
-{
-    $query = "SELECT DISTINCT(users_id) FROM reviewers WHERE $form_id IN (early_notifications_id, contracts_id)";
-    $user_types = ["Reviewer"];
-    $mda = "NA";
+function is_valid_phone($phone) {
+    // Remove any non-digit characters
+    $cleaned_phone = preg_replace("/[^0-9]/", "", $phone);
     
-    $reviewers = customQuery($query);
-    error_log(print_r($reviewers, true));
-
-    foreach ($reviewers as $reviewer) {
-        insertNotification($reviewer['users_id'], $user_types, $mda, $message, "$form");
-    }
+    // Validate Nigerian phone number format
+    $pattern = "/^0[7-9][0-9]{9}$/";
+    
+    return preg_match($pattern, $cleaned_phone);
 }
 
-function findearlyNotificationId($contract_id){
-    $findNotification = customQuery2("SELECT early_notifications.id, early_notifications.date_created FROM contracts JOIN early_notifications ON
-    early_notifications.id = contracts.early_notifications_id
-    and contracts.id = '$contract_id'");
+function is_valid_password($password) {
+    // Check if the password meets the complexity criteria and has a minimum length of 8 characters
+    $pattern = "/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&!*_])[A-Za-z\d@#$%^&!*_]{8,}$/";
 
-    return $findNotification;
+    return preg_match($pattern, $password);
 }
