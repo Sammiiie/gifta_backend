@@ -42,7 +42,7 @@ if (!empty($data)) {
                     http_response_code(201);
     
                     // tell the user
-                    echo json_encode(array("message" => "Password Updated succesfully.", "Password update Status" => "$updateUser"));
+                    echo json_encode(array("message" => "Password Updated succesfully.", "Password update Status" => "$updateUser", "status" => 200));
                 } else {
                     // set response code - 503 service unavailable
                     $error = mysqli_error($connection);
@@ -50,35 +50,35 @@ if (!empty($data)) {
     
                     // tell the user
                     if ($error != "")
-                        echo json_encode(array("message" => "Could not edit user details", "error" => $error));
+                        echo json_encode(array("message" => "Could not edit user details", "error" => $error, "status" => 400));
                     else
-                        echo json_encode(array("message" => "Could not edit user details", "error" => "Can't use old password"));
+                        echo json_encode(array("message" => "Could not edit user details", "error" => "Can't use old password", "status" => 400));
                 }
             } else {
                 // set response code - 503 service unavailable
                 http_response_code(400);
     
                 // tell the user
-                echo json_encode(array("message" => "Token has expired"));
+                echo json_encode(array("message" => "Token has expired", "status" => 400));
             }
         }else {
             // set response code - 503 service unavailable
             http_response_code(400);
 
             // tell the user
-            echo json_encode(array("message" => "Token not valid"));
+            echo json_encode(array("message" => "Token not valid", "status" => 400));
         }
     } else {
         // set response code - 503 service unavailable
         http_response_code(400);
 
         // tell the user
-        echo json_encode(array("message" => "Email cannot be empty"));
+        echo json_encode(array("message" => "Email cannot be empty", "status" => 400));
     }
 } else {
     // set response code - 400 bad request
     http_response_code(400);
 
     // tell the user
-    echo json_encode(array("message" => "Fill in appropraite data."));
+    echo json_encode(array("message" => "Fill in appropraite data.", "status" => 400));
 }

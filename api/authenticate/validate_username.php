@@ -16,18 +16,18 @@ if (!empty($data)) {
         http_response_code(200);
 
         // tell the user
-        echo json_encode(array("message" => "Username Okay"));
+        echo json_encode(array("status" => 200, "message" => "Username Okay"));
     } else {
         // set response code - 400 service unavailable
         http_response_code(400);
 
         // tell the user
-        echo json_encode(array("message" => "Username found"));
+        echo json_encode(array("status" => 400, "message" => "Username found"));
     }
 } else {
     // set response code - 400 bad request
     http_response_code(400);
 
     // tell the user
-    echo json_encode(array("message" => "Fill in appropraite data."));
+    echo json_encode(array("status" => 400, "message" => "Fill in appropraite data."));
 }

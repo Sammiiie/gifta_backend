@@ -25,28 +25,28 @@ if (!empty($data)) {
 
             if ($smsSent) {
                 http_response_code(200);
-                echo json_encode(array("message" => "OTP sent", "status" => "Success"));
+                echo json_encode(array("message" => "OTP sent", "status" => "200"));
             } else {
                 http_response_code(400);
-                echo json_encode(array("message" => "Failed to send OTP via SMS", "status" => false));
+                echo json_encode(array("message" => "Failed to send OTP via SMS", "status" => 400));
             }
         } else {
             http_response_code(400);
-            echo json_encode(array("message" => "Failed to generate OTP", "status" => false));
+            echo json_encode(array("message" => "Failed to generate OTP", "status" => 400));
         }
     } else {
         http_response_code(400);
-        echo json_encode(array("message" => "Invalid Nigerian phone number", "status" => false));
+        echo json_encode(array("message" => "Invalid Nigerian phone number", "status" => 400));
     }
 } else {
     http_response_code(400);
-    echo json_encode(array("message" => "Fill in appropriate data.", "status" => false));
+    echo json_encode(array("message" => "Fill in appropriate data.", "status" => 400));
 }
 
 
 function sendOtpViaSms($otp) {
     // Implement your SMS sending logic here
-    // Return true if the SMS was sent successfully, otherwise return false
+    // Return true if the SMS was sent successfully, otherwise return 400
     // You can use third-party services or APIs to send SMS
     // Example: return sendSmsUsingSomeService($phone_number, $otp);
     return true; // Simulated success

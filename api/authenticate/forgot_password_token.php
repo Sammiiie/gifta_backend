@@ -52,7 +52,7 @@ if (!empty($data)) {
                 http_response_code(201);
 
                 // tell the user
-                echo json_encode(array("message" => "Reset Token sent succesfully.", "user" => "$email"));
+                echo json_encode(array("message" => "Reset Token sent succesfully.", "user" => "$email", "status" => 200));
             } else {
                 // set response code - 503 service unavailable
                 $error = mysqli_error($connection);
@@ -60,28 +60,28 @@ if (!empty($data)) {
 
                 // tell the user
                 if ($error != "")
-                    echo json_encode(array("message" => "Could not send token", "error" => $error));
+                    echo json_encode(array("message" => "Could not send token", "error" => $error, "status" => 400));
                 else
-                    echo json_encode(array("message" => "Could not send token", "error" => "Something went wrong"));
+                    echo json_encode(array("message" => "Could not send token", "error" => "Something went wrong", "status" => 400));
             }
         } else {
             // set response code - 503 service unavailable
             http_response_code(400);
 
             // tell the user
-            echo json_encode(array("message" => "No user exists with this email"));
+            echo json_encode(array("message" => "No user exists with this email", "status" => 400));
         }
     } else {
         // set response code - 503 service unavailable
         http_response_code(400);
 
         // tell the user
-        echo json_encode(array("message" => "Email cannot be empty"));
+        echo json_encode(array("message" => "Email cannot be empty", "status" => 400));
     }
 } else {
     // set response code - 400 bad request
     http_response_code(400);
 
     // tell the user
-    echo json_encode(array("message" => "Fill in appropraite data."));
+    echo json_encode(array("message" => "Fill in appropraite data.", "status" => 400));
 }

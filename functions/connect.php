@@ -1,6 +1,8 @@
 <?php
 include "db.php";
 
+date_default_timezone_set('Africa/Lagos');
+
 mysqli_query($connection, "SET FOREIGN_KEY_CHECKS=0");
 
 function generateRandomString($length = 10)
@@ -81,10 +83,32 @@ function executeQuery2($sql, $data = [])
     }
     return $stmt;
 }
+
+function executeDynamicQuery($sql, $data = []) {
+    global $connection;
+    
+    if ($stmt = $connection->prepare($sql)) {
+        if (!empty($data)) {
+            $types = str_repeat('s', count($data));
+            $stmt->bind_param($types, ...$data);
+        }
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        $stmt->close(); // Close the prepared statement
+        return $result;
+    } else {
+        // Handle any errors here
+        return null;
+    }
+}
+
 function customQuery($sql)
 {
     $stmt = executeQuery($sql, "");
-    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->free_result();
+
+    return $result;
 }
 function customQuery2($sql)
 {

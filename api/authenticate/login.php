@@ -23,18 +23,18 @@ if (!empty($data)) {
         http_response_code(200);
 
         // tell the user
-        echo json_encode(array("message" => "User login sussuesful.", "userid" => $loginResponse['email'], $loginResponse['first_name']));
+        echo json_encode(array("message" => "User login sussuesful.", "userid" => $loginResponse['email'], $loginResponse['first_name'], "status" => 200));
     } else {
         // set response code - 400 service unavailable
         http_response_code(400);
 
         // tell the user
-        echo json_encode(array("message" => "Wrong Password or email", "error" => $loginResponse));
+        echo json_encode(array("message" => "Wrong Password or email", "error" => $loginResponse, "status" => 400));
     }
 } else {
     // set response code - 400 bad request
     http_response_code(400);
 
     // tell the user
-    echo json_encode(array("message" => "Fill in appropraite data."));
+    echo json_encode(array("message" => "Fill in appropraite data.", "status" => 400));
 }

@@ -24,16 +24,28 @@ function CreateUser($username, $dob, $phone, $email, $address, $password)
         'passkey' => $passkey
     ];
 
-    $createUser = insert('users', $userData);
-    if ($createUser) {
-        $createUserResponse = [
-            'user_id' => $createUser,
-            'username' => $username,
-            'email' => $email,
-        ];
-        return $createUserResponse;
-    } else {
-        return mysqli_error($connection);
+    try {
+        $createUser = insert('users', $userData);
+        if ($createUser) {
+            $createUserResponse = [
+                'status' => true,
+                'user_id' => $createUser,
+                'username' => $username,
+                'email' => $email,
+            ];
+            return $createUserResponse;
+        } else {
+            // Handle other errors here if needed
+            return "User creation failed.";
+        }
+    } catch (mysqli_sql_exception $e) {
+        if ($e->getCode() == 1062) {
+            // Duplicate entry error (username or email already exists)
+            return array("status"=> false, "message" => "Duplicate entry error: " . $e->getMessage());
+        } else {
+            // Handle other database errors here if needed
+            return array("status"=> false, "message" =>"Database error: " . $e->getMessage());
+        }
     }
 }
 
@@ -134,7 +146,7 @@ function LogInformation($email, $activity, $method_name)
         'method_name' => $method_name
     ];
 
-    $recordActitvity =  insert('actitvity_logs', $activityData);
+    $recordActitvity =  insert('activity_logs', $activityData);
     if ($recordActitvity) {
         return $recordActitvity;
     }
@@ -170,6 +182,50 @@ function GenerateOtpPhone($phone)
         return $otp;
     }
     return mysqli_error($connection);
+}
+
+function ValidateOtp($contactused, $otp)
+{
+    global $connection;
+    global $today;
+
+    // Prepare a SQL query to fetch the OTP record
+    $sql = "SELECT id, otp, status, date_created FROM otp WHERE (email = ? OR phone = ?) AND otp = ? LIMIT 1";
+    $data =  [$contactused, $contactused, $otp];
+
+    $result = executeDynamicQuery($sql, $data);
+
+    if ($result) {
+
+        $id = $result['id'];
+        $storedOtp = $result['otp'];
+        $status = $result['status'];
+        $dateCreated = new DateTime($result['date_created']);
+
+        // Check if the provided OTP is numeric and has 6 digits
+        if (is_numeric($otp) && strlen($otp) === 6) {
+            // Check if status is pending and datetime is not greater than 10 minutes compared to date_created
+            if ($status === 'PENDING') {
+                $now = new DateTime();
+                error_log("Datetime: $today");
+                $interval = $now->diff($dateCreated);
+                $minutesDiff = $interval->i;
+
+                if ($minutesDiff <= 10) {
+                    update('otp', $id, 'id', ['status' => "USED"]);
+                    return array('status' => 200, 'message' => 'OTP is valid');
+                } else {
+                    return array('status' => 400, 'message' => 'OTP has expired');
+                }
+            } else {
+                return array('status' => 400, 'message' => 'OTP status is not pending');
+            }
+        } else {
+            return array('status' => 400, 'message' => 'Invalid OTP format');
+        }
+    } else {
+        return array('status' => 400, 'message' => 'No matching record found');
+    }
 }
 
 

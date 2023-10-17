@@ -32,24 +32,24 @@ if (!empty($data)) {
             http_response_code(200);
 
             // tell the user
-            echo json_encode(array("message" => "OTP sent", "status" => "Success"));
+            echo json_encode(array("message" => "OTP sent", "status" => 200));
         } else {
             // set response code - 400 service unavailable
             http_response_code(400);
 
             // tell the user
-            echo json_encode(array("message" => "Failed to send Otp", "status" => false));
+            echo json_encode(array("message" => "Failed to send Otp", "status" => 400));
         }
     } else {
         http_response_code(400);
 
         // tell the user
-        echo json_encode(array("message" => "Not Valid Email address"));
+        echo json_encode(array("message" => "Not Valid Email address", "status" => 400));
     }
 } else {
     // set response code - 400 bad request
     http_response_code(400);
 
     // tell the user
-    echo json_encode(array("message" => "Fill in appropraite data."));
+    echo json_encode(array("message" => "Fill in appropraite data.", "status" => 400));
 }

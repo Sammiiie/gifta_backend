@@ -16,19 +16,19 @@ if (!empty($data)) {
             http_response_code(200);
     
             // tell the user
-            echo json_encode(array("message" => "Email Okay", "status" => true));
+            echo json_encode(array("message" => "Email Okay", "status" => 200));
         } else {
             // set response code - 400 service unavailable
             http_response_code(400);
     
             // tell the user
-            echo json_encode(array("message" => "Email found", "status" => false));
+            echo json_encode(array("message" => "Email found", "status" => 400));
         }
     }else{
         http_response_code(400);
     
             // tell the user
-            echo json_encode(array("message" => "Not Valid Email address", "status" => false));
+            echo json_encode(array("message" => "Not Valid Email address", "status" => 400));
     }
 
     
@@ -37,5 +37,5 @@ if (!empty($data)) {
     http_response_code(400);
 
     // tell the user
-    echo json_encode(array("message" => "Fill in appropraite data.", "status" => false));
+    echo json_encode(array("message" => "Fill in appropraite data.", "status" => 400));
 }
