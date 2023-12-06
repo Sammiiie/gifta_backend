@@ -23,7 +23,7 @@ if (!empty($data)) {
         http_response_code(200);
 
         // tell the user
-        echo json_encode(array("message" => "User login sussuesful.", "userid" => $loginResponse['email'], $loginResponse['first_name'], "status" => 200));
+        echo json_encode(array("message" => "User login sussuesful.", "userid" => $loginResponse['email'], "username" => $loginResponse['username'], "status" => 200));
     } else {
         // set response code - 400 service unavailable
         http_response_code(400);

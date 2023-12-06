@@ -128,7 +128,7 @@ function ValidateEmail($email)
 function AuthenticateUser($email, $password)
 {
     global $today;
-    $findUser = customQuery2("Select id, email, passkey, username, firstname FROM users WHERE email = '$email' AND user_type = 'CUSTOMER'");
+    $findUser = customQuery2("Select id, email, passkey, username FROM users WHERE email = '$email' AND user_type = 'CUSTOMER'");
     if (password_verify($password, $findUser['passkey'])) {
         update('users', $email, 'email', ['last_login' => $today]);
         return $findUser;
